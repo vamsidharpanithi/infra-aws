@@ -29,6 +29,8 @@ module "eks" {
     }
   }
 
+  cluster_enabled_log_types = var.cluster_enabled_log_types
+
   cluster_endpoint_public_access = true
 
   cluster_ip_family = "ipv4"
@@ -52,7 +54,7 @@ module "eks" {
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     capacity_type  = "ON_DEMAND"
-    instance_types = ["c3.large"]
+    instance_types = ["m4.large"]
   }
   eks_managed_node_groups = {
     one = {
@@ -75,6 +77,7 @@ module "eks" {
       max_unavailable = 1
     }
   }
+
 
   subnet_ids = module.vpc.private_subnets
   vpc_id     = module.vpc.vpc_id
