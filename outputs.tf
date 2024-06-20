@@ -17,3 +17,8 @@ output "cluster_name" {
   description = "Kubernetes Cluster Name"
   value       = module.eks.cluster_name
 }
+
+output "key_arn" {
+  description = "key for encrypting secrets in the cluster"
+  value       = module.kms.key_arn
+}

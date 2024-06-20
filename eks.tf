@@ -37,10 +37,11 @@ module "eks" {
 
   cluster_version = "1.29"
 
-  create_kms_key = true
-  cluster_encryption_config = [{
-    resources = ["secrets"]
-  }]
+  create_kms_key = false
+  cluster_encryption_config = {
+    provider_key_arn = module.kms.key_arn
+    resources        = ["secrets"]
+  }
 
   kms_key_description           = "KMS Secrets encryption for EKS cluster."
   kms_key_enable_default_policy = true
