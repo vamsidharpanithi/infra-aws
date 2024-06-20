@@ -29,6 +29,22 @@ module "eks" {
     eks-pod-identity-agent = {
       most_recent = true
     }
+
+    coredns = {
+      preserve    = true
+      most_recent = true
+
+      timeouts = {
+        create = "25m"
+        delete = "10m"
+      }
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent = true
+    }
   }
 
   cluster_enabled_log_types = var.cluster_enabled_log_types
