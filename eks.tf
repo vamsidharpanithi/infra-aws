@@ -51,7 +51,7 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
-  cluster_ip_family = "ipv4"
+  cluster_ip_family = var.cluster_ip_family
 
   cluster_name = local.cluster_name
 
@@ -69,9 +69,9 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   eks_managed_node_group_defaults = {
-    ami_type       = "AL2_x86_64"
+    ami_type       = var.ami_type
     capacity_type  = "ON_DEMAND"
-    instance_types = ["c3.large"]
+    instance_types = var.instance_types
   }
   eks_managed_node_groups = {
     one = {
