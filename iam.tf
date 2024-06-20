@@ -3,8 +3,9 @@ data "aws_iam_policy" "ebs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
-data "aws_iam_policy_document" "assume_role" {
+data "aws_iam_policy_document" "pod_identity_role_policy" {
   statement {
+    sid    = "AllowEksAuthToAssumeRoleForPodIdentity"
     effect = "Allow"
 
     principals {
@@ -32,7 +33,7 @@ module "irsa-ebs-csi" {
 
 resource "aws_iam_role" "eks-pod-identity" {
   name               = "eks-pod-identity-example"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.pod_identity_role_policy.json
 }
 
 resource "aws_eks_pod_identity_association" "association" {
