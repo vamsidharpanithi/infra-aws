@@ -13,15 +13,17 @@ resource "random_string" "suffix" {
 }
 
 module "eks" {
+
+  authentication_mode = var.authentication_mode
+
   source  = "terraform-aws-modules/eks/aws"
   version = "20.8.5"
 
   cluster_addons = {
     aws-ebs-csi-driver = {
       service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
-      # addon_version            = latest
-      most_recent       = true
-      resolve_conflicts = "PRESERVE"
+      most_recent              = true
+      resolve_conflicts        = "PRESERVE"
     }
 
     eks-pod-identity-agent = {
@@ -49,12 +51,11 @@ module "eks" {
   kms_key_enable_default_policy = true
 
   enable_cluster_creator_admin_permissions = true
-  # enabled_cluster_log_types                = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     capacity_type  = "ON_DEMAND"
-    instance_types = ["m4.large"]
+    instance_types = ["c3.large"]
   }
   eks_managed_node_groups = {
     one = {
