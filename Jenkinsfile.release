@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: 'main']],
+                        userRemoteConfigs: [[credentialsId: 'github_token', url: 'https://github.com/cyse7125-su24-team04/infra-aws.git']]
+                    ])
+                }
+            }
+        }
+        stage('Release Helm Chart') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'github_token', usernameVariable: 'GH_USERNAME', passwordVariable: 'GH_TOKEN')]) {
+
+                        sh 'npm install @semantic-release/commit-analyzer'
+                        sh 'npm install @semantic-release/release-notes-generator'
+                        sh 'npm install @semantic-release/changelog'
+                        sh 'npm install @semantic-release/npm'
+                        sh 'npm install @semantic-release/git'
+                        sh 'npm install @semantic-release/github' 
+                        sh 'npm install semantic-release-helm'
+                        sh 'npx semantic-release'
+                    }
+                }
+            }
+        }
+    }
+}
