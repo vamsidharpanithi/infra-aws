@@ -18,6 +18,17 @@ pipeline {
                 }
             }
         }
+        stage('Initialize Terraform') {
+            steps {
+                script {
+                    try {
+                        sh 'terraform init -input=false -backend=false'
+                    } catch (Exception e) {
+                        error "Failed to initialize Terraform: ${e.message}"
+                    }
+                }
+            }
+        }
 
         stage('Terraform Format Check') {
             steps {
