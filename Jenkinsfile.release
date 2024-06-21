@@ -13,7 +13,7 @@ pipeline {
                 }
             }
         }
-        stage('Release Helm Chart') {
+        stage('Release Git Chart') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github_token', usernameVariable: 'GH_USERNAME', passwordVariable: 'GH_TOKEN')]) {
