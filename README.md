@@ -14,7 +14,7 @@ terraform apply
 ```
 
 ## 3. Following kubectl
-Run the following command to retrieve the access credentials for your cluster and configure kubectl.
+Run the following command to retrieve the access credentials for your cluster and configure kubectl
 ```
 aws eks --region $(terraform output -raw region) update-kubeconfig \
     --name $(terraform output -raw cluster_name)
