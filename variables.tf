@@ -37,3 +37,27 @@ variable "aws_account_id" {
   description = "AWS Account ID"
   type        = string
 }
+
+variable "postgresPassword" {
+  description = "Postgres Password"
+  type        = string
+}
+
+variable "username" {
+  description = "Postgres Username"
+  type        = string
+}
+
+variable "password" {
+  description = "Postgres Password"
+  type        = string
+}
+
+variable "database" {
+  description = "Postgres Database"
+  type        = string
+}
+variable "postgresqlPort" {
+  description = "Postgres Port"
+  type        = string
+}

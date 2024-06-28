@@ -40,3 +40,29 @@ resource "helm_release" "kafka" {
   # depends_on =  [kubernetes_namespace.kafka]
   depends_on = [module.eks, kubernetes_namespace.kafka]
 }
+
+resource "helm_release" "postgres" {
+  name       = "postgres"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "postgresql"
+  namespace  = kubernetes_namespace.webapp_cve_consumer.metadata[0].name
+
+  values = [
+    <<EOF
+global:    
+  postgresql:
+    auth:
+      postgresPassword: var.postgresPassword
+      username: var.username
+      password: var.password
+      database: var.database
+    service:
+      ports:
+        postgresql: var.postgresqlPort
+primary:        
+  resourcesPreset: "medium"
+EOF
+  ]
+
+  depends_on = [module.eks, kubernetes_namespace.webapp_cve_consumer]
+}
