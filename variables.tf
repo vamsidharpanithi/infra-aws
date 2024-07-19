@@ -38,26 +38,12 @@ variable "aws_account_id" {
   type        = string
 }
 
-variable "postgresPassword" {
-  description = "Postgres Password"
+variable "github_token" {
+  description = "Github token"
   type        = string
 }
 
-variable "username" {
-  description = "Postgres Username"
-  type        = string
-}
-
-variable "password" {
-  description = "Postgres Password"
-  type        = string
-}
-
-variable "database" {
-  description = "Postgres Database"
-  type        = string
-}
-variable "postgresqlPort" {
-  description = "Postgres Port"
+variable "autoscaler_version" {
+  description = "Cluster autoscaler version"
   type        = string
 }
