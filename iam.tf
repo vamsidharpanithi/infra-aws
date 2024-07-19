@@ -42,3 +42,52 @@ resource "aws_eks_pod_identity_association" "association" {
   service_account = var.service_account
   role_arn        = aws_iam_role.eks-pod-identity.arn
 }
+
+resource "aws_iam_role" "cluster_autoscaler_role" {
+  name = "eks-cluster-autoscaler-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:cluster-autoscaler:cluster-autoscaler"
+          }
+        }
+      }
+    ]
+  })
+
+  # IAM policy defining necessary permissions
+  inline_policy {
+    name = "eks-cluster-autoscaler-policy"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeAutoScalingInstances",
+            "autoscaling:DescribeLaunchConfigurations",
+            "autoscaling:DescribeScalingActivities",
+            "autoscaling:SetDesiredCapacity",
+            "autoscaling:TerminateInstanceInAutoScalingGroup",
+            "ec2:DescribeImages",
+            "ec2:DescribeInstanceTypes",
+            "ec2:DescribeLaunchTemplateVersions",
+            "ec2:GetInstanceTypesFromInstanceRequirements",
+            "eks:DescribeNodegroup"
+          ]
+          Resource = ["*"]
+        }
+      ]
+    })
+  }
+}

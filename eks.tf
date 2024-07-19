@@ -1,6 +1,6 @@
 locals {
   #The name must be unique within the AWS Region and AWS account that you're creating the cluster in.
-  cluster_name = "June25-peggy-${random_string.suffix.result}"
+  cluster_name = "peggy-test-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -39,7 +39,8 @@ module "eks" {
       most_recent = true
     }
     vpc-cni = {
-      most_recent = true
+      most_recent          = true
+      configuration_values = jsonencode({ "enableNetworkPolicy" : "true" })
     }
   }
 
@@ -91,47 +92,47 @@ module "eks" {
       ]
     }
 
-    two = {
-      name            = "node-group-2"
-      min_size        = 3
-      max_size        = 6
-      desired_size    = 3
-      max_unavailable = 1
+    # two = {
+    #   name            = "node-group-2"
+    #   min_size        = 1
+    #   max_size        = 1
+    #   desired_size    = 1
+    #   max_unavailable = 1
 
-      block_device_mappings = [
-        {
-          device_name = "/dev/xvda"
-          ebs = {
-            volume_size           = 20
-            volume_type           = "gp2"
-            encrypted             = true
-            kms_key_id            = aws_kms_key.eks_node_kms.arn
-            delete_on_termination = true
-          }
-        }
-      ]
-    }
+    #   block_device_mappings = [
+    #     {
+    #       device_name = "/dev/xvda"
+    #       ebs = {
+    #         volume_size           = 20
+    #         volume_type           = "gp2"
+    #         encrypted             = true
+    #         kms_key_id            = aws_kms_key.eks_node_kms.arn
+    #         delete_on_termination = true
+    #       }
+    #     }
+    #   ]
+    # }
 
-    three = {
-      name            = "node-group-3"
-      min_size        = 3
-      max_size        = 6
-      desired_size    = 3
-      max_unavailable = 1
+    # three = {
+    #   name            = "node-group-3"
+    #   min_size        = 1
+    #   max_size        = 1
+    #   desired_size    = 1
+    #   max_unavailable = 1
 
-      block_device_mappings = [
-        {
-          device_name = "/dev/xvda"
-          ebs = {
-            volume_size           = 20
-            volume_type           = "gp2"
-            encrypted             = true
-            kms_key_id            = aws_kms_key.eks_node_kms.arn
-            delete_on_termination = true
-          }
-        }
-      ]
-    }
+    #   block_device_mappings = [
+    #     {
+    #       device_name = "/dev/xvda"
+    #       ebs = {
+    #         volume_size           = 20
+    #         volume_type           = "gp2"
+    #         encrypted             = true
+    #         kms_key_id            = aws_kms_key.eks_node_kms.arn
+    #         delete_on_termination = true
+    #       }
+    #     }
+    #   ]
+    # }
   }
 
 
@@ -162,4 +163,9 @@ resource "kubernetes_namespace" "webapp_cve_consumer" {
   }
 }
 
+resource "kubernetes_namespace" "cluster_autoscaler" {
+  metadata {
+    name = "cluster-autoscaler"
+  }
+}
 
