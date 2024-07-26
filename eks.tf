@@ -168,4 +168,9 @@ resource "kubernetes_namespace" "cluster_autoscaler" {
     name = "cluster-autoscaler"
   }
 }
+resource "kubernetes_namespace" "operator" {
+  metadata {
+    name = "cve-operator"
+  }
+}
 
