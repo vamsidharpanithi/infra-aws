@@ -47,3 +47,8 @@ variable "autoscaler_version" {
   description = "Cluster autoscaler version"
   type        = string
 }
+variable "fluent_bit_version" {
+  description = "Fluent bit version"
+  type        = string
+
+}

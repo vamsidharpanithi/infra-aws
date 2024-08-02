@@ -38,10 +38,13 @@ controller:
     limits:
       memory: "850Mi"
       cpu: "1"
+metrics:
+  jmx:
+    enabled: true   
 EOF
   ]
 
-  depends_on = [module.eks, kubernetes_namespace.kafka]
+  depends_on = [module.eks, kubernetes_namespace.kafka, helm_release.kafka_exporter]
 }
 
 
@@ -93,6 +96,8 @@ primary:
   resourcesPreset: "medium"
   networkPolicy:  
     enabled: false
+metrics:  
+  enabled: true  
 EOF
   ]
 
@@ -138,4 +143,97 @@ resource "helm_release" "cluster_autoscaler" {
 
 
   depends_on = [module.eks, kubernetes_namespace.cluster_autoscaler]
+}
+
+resource "helm_release" "fluent_bit" {
+  name       = "cloudwatch"
+  chart      = "https://x-access-token:${var.github_token}@github.com/cyse7125-su24-team04/helm-cloudewatch/archive/refs/tags/v${var.fluent_bit_version}.tar.gz"
+  namespace  = kubernetes_namespace.cloud_watch.metadata[0].name
+  depends_on = [module.eks, kubernetes_namespace.cloud_watch]
+
+}
+
+resource "helm_release" "prometheus" {
+  name       = "grafana-prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+
+  values = [
+    <<EOF
+prometheus:
+  prometheusSpec:    
+    additionalScrapeConfigs:
+      - job_name: 'postgresql'
+        static_configs:
+          - targets: 
+            - 'postgres-postgresql-metrics.webapp-cve-consumer.svc.cluster.local:9187'
+      - job_name: 'kafka'
+        static_configs:
+          - targets: 
+            - 'kafka-jmx-metrics.kafka.svc.cluster.local:5556' 
+EOF
+  ]
+}
+
+resource "helm_release" "kafka_exporter" {
+  name       = "kafka-exporter"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus-kafka-exporter"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+
+  values = [
+    <<EOF
+kafkaServer:
+  - kafka.kafka.svc.cluster.local:9092
+prometheus:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    additionalLabels:
+      release: grafana-prometheus  
+EOF
+  ]
+
+}
+
+resource "helm_release" "istio-base" {
+  name       = "istio-base"
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "base"
+  namespace  = kubernetes_namespace.istio.metadata[0].name
+  depends_on = [kubernetes_namespace.istio]
+}
+
+resource "helm_release" "istiod" {
+  name       = "istiod"
+  chart      = "./istiod"
+  namespace  = kubernetes_namespace.istio.metadata[0].name
+  depends_on = [helm_release.istio-base, kubernetes_namespace.istio]
+
+}
+
+resource "helm_release" "istio-gateway" {
+  name       = "istio-gateway"
+  chart      = "./gateway"
+  namespace  = kubernetes_namespace.istio.metadata[0].name
+  depends_on = [helm_release.istiod]
+
+}
+
+resource "helm_release" "external-dns" {
+  depends_on = [kubernetes_namespace.external_dns]
+  name       = "external-dns"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "external-dns"
+  namespace  = kubernetes_namespace.external_dns.metadata[0].name
+  set {
+    name  = "domainFilters[0]"
+    value = "dev.csye6225cloud.me"
+  }
+
+  set {
+    name  = "txtOwnerId"
+    value = "Z03666913JAM947E1XPH4"
+  }
 }

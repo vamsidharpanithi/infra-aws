@@ -1,0 +1,25 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: observability-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingress
+  servers:
+  - port:
+      number: 80
+      name: http-observability
+      protocol: HTTP
+    hosts:
+    - "dev.csye6225cloud.me"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "dev.csye6225cloud.me"
+    tls:
+      mode: SIMPLE
+      credentialName: istio-gateway-tls

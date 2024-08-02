@@ -27,6 +27,14 @@ terraform {
       source  = "hashicorp/cloudinit"
       version = "~> 2.3.4"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.31.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.4.1"
+    }
   }
 
   required_version = "~> 1.3"

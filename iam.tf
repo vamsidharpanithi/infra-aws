@@ -32,8 +32,12 @@ module "irsa-ebs-csi" {
 }
 
 resource "aws_iam_role" "eks-pod-identity" {
-  name               = "eks-pod-identity-example"
+  name               = "eks-pod-identity-example1"
   assume_role_policy = data.aws_iam_policy_document.pod_identity_role_policy.json
+}
+resource "aws_iam_role_policy_attachment" "cloudwatch-agent" {
+  role       = aws_iam_role.eks-pod-identity.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_eks_pod_identity_association" "association" {
@@ -44,7 +48,7 @@ resource "aws_eks_pod_identity_association" "association" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler_role" {
-  name = "eks-cluster-autoscaler-role"
+  name = "eks-cluster-autoscaler-role1"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

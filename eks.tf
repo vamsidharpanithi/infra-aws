@@ -1,6 +1,6 @@
 locals {
   #The name must be unique within the AWS Region and AWS account that you're creating the cluster in.
-  cluster_name = "peggy-test-${random_string.suffix.result}"
+  cluster_name = "peggy-cluster"
 }
 
 resource "random_string" "suffix" {
@@ -149,28 +149,63 @@ resource "kubernetes_namespace" "webapp_cve_processor" {
   metadata {
     name = "webapp-cve-processor"
   }
+
 }
 
 resource "kubernetes_namespace" "kafka" {
   metadata {
     name = "kafka"
+    labels = {
+    "istio-injection" = "enabled" }
   }
 }
 
 resource "kubernetes_namespace" "webapp_cve_consumer" {
   metadata {
     name = "webapp-cve-consumer"
+    labels = {
+    "istio-injection" = "enabled" }
   }
 }
-
 resource "kubernetes_namespace" "cluster_autoscaler" {
   metadata {
     name = "cluster-autoscaler"
   }
 }
+
 resource "kubernetes_namespace" "operator" {
   metadata {
     name = "cve-operator"
+    labels = {
+    "istio-injection" = "enabled" }
   }
+}
+
+resource "kubernetes_namespace" "cloud_watch" {
+  metadata {
+    name = "amazon-cloudwatch"
+  }
+
+}
+
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+
+
+}
+
+resource "kubernetes_namespace" "istio" {
+  metadata {
+    name = "istio-system"
+  }
+
+}
+resource "kubernetes_namespace" "external_dns" {
+  metadata {
+    name = "external-dns"
+  }
+
 }
 
