@@ -17,6 +17,8 @@ crash.*.log
 *.tfvars.json
 *.tfvars.dev
 *.tfvars.prod
+.DS_Store
+*.DS_Store*
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in

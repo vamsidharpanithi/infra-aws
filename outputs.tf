@@ -22,3 +22,4 @@ output "key_arn" {
   description = "key for encrypting secrets in the cluster"
   value       = module.kms.key_arn
 }
+

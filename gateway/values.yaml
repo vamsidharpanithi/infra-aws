@@ -53,9 +53,7 @@ defaults:
       port: 443
       protocol: TCP
       targetPort: 443
-    annotations: 
-      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    annotations: {}
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
     externalTrafficPolicy: ""
