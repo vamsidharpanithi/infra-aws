@@ -4,7 +4,7 @@ module "kms" {
   source  = "terraform-aws-modules/kms/aws"
   version = "~> 1.5"
 
-  aliases               = ["eks/pliao-key1"]
+  aliases               = ["eks/pliao-key2"]
   description           = "pliao-test cluster encryption key"
   enable_default_policy = true
   key_owners            = [data.aws_caller_identity.current.arn]

@@ -10,6 +10,9 @@ resource "random_string" "suffix" {
 
 module "eks" {
 
+  create_cloudwatch_log_group = false
+
+
   authentication_mode = var.authentication_mode
 
   source  = "terraform-aws-modules/eks/aws"
@@ -90,7 +93,12 @@ module "eks" {
           }
         }
       ]
+      create_iam_role        = false
+      iam_role_arn           = aws_iam_role.eks_node_role.arn
+      vpc_security_group_ids = [aws_security_group.eks_node_group_allow_istio_sg.id]
     }
+
+
 
     # two = {
     #   name            = "node-group-2"
@@ -148,6 +156,9 @@ module "eks" {
 resource "kubernetes_namespace" "webapp_cve_processor" {
   metadata {
     name = "webapp-cve-processor"
+    labels = {
+      "istio-injection" = "enabled"
+    "pod-security.kubernetes.io/enforce" = "privileged" }
   }
 
 }
@@ -156,7 +167,8 @@ resource "kubernetes_namespace" "kafka" {
   metadata {
     name = "kafka"
     labels = {
-    "istio-injection" = "enabled" }
+      "istio-injection" = "enabled"
+    "pod-security.kubernetes.io/enforce" = "privileged" }
   }
 }
 

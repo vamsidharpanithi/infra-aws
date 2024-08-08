@@ -21,6 +21,12 @@ provisioning:
     - name: cve
       replicationFactor: 3
       partitions: 3 
+  postScript: |
+    trap "curl --max-time 2 -s -f -XPOST http://127.0.0.1:15020/quitquitquit" EXIT;
+    while ! curl -s -f http://127.0.0.1:15020/healthz/ready; do
+    sleep 1;
+    done;
+    echo "Ready!"    
 controller:
   persistence:
     size: 1Gi
@@ -40,11 +46,13 @@ controller:
       cpu: "1"
 metrics:
   jmx:
-    enabled: true   
+    enabled: true 
+
+
 EOF
   ]
 
-  depends_on = [module.eks, kubernetes_namespace.kafka, helm_release.kafka_exporter]
+  depends_on = [module.eks, kubernetes_namespace.kafka]
 }
 
 
@@ -154,10 +162,11 @@ resource "helm_release" "fluent_bit" {
 }
 
 resource "helm_release" "prometheus" {
-  name       = "grafana-prometheus"
+  name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  depends_on = [kubernetes_namespace.monitoring, module.eks]
 
   values = [
     <<EOF
@@ -181,6 +190,7 @@ resource "helm_release" "kafka_exporter" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus-kafka-exporter"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  depends_on = [kubernetes_namespace.monitoring]
 
   values = [
     <<EOF
@@ -191,18 +201,19 @@ prometheus:
     enabled: true
     namespace: monitoring
     additionalLabels:
-      release: grafana-prometheus  
+      release: prometheus
 EOF
   ]
 
 }
+
 
 resource "helm_release" "istio-base" {
   name       = "istio-base"
   repository = "https://istio-release.storage.googleapis.com/charts"
   chart      = "base"
   namespace  = kubernetes_namespace.istio.metadata[0].name
-  depends_on = [kubernetes_namespace.istio]
+  depends_on = [module.eks, kubernetes_namespace.istio]
 }
 
 resource "helm_release" "istiod" {
@@ -211,29 +222,64 @@ resource "helm_release" "istiod" {
   namespace  = kubernetes_namespace.istio.metadata[0].name
   depends_on = [helm_release.istio-base, kubernetes_namespace.istio]
 
+  set {
+    name  = "global.proxy.holdApplicationUntilProxyStarts"
+    value = "true"
+  }
+  # set {
+  #   name  = "profile"
+  #   value = ""
+  # }
+
+  set {
+    name  = "global.logAsJson"
+    value = "true"
+  }
+
 }
 
-resource "helm_release" "istio-gateway" {
-  name       = "istio-gateway"
+resource "helm_release" "istio_ingress" {
+  name       = "istio-ingressgateway"
   chart      = "./gateway"
   namespace  = kubernetes_namespace.istio.metadata[0].name
   depends_on = [helm_release.istiod]
 
+  values = [
+    <<EOF
+defaults:  
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      external-dns.alpha.kubernetes.io/hostname: "grafana.dev.csye6225cloud.me"
+    ports:
+      - port: 80
+        targetPort: 8080
+        name: http2
+      - port: 443
+        targetPort: 8443
+        name: https
+      - port: 15021
+        targetPort: 15021
+        name: status-port
+    type: LoadBalancer
+EOF
+  ]
 }
 
-resource "helm_release" "external-dns" {
-  depends_on = [kubernetes_namespace.external_dns]
-  name       = "external-dns"
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "external-dns"
-  namespace  = kubernetes_namespace.external_dns.metadata[0].name
-  set {
-    name  = "domainFilters[0]"
-    value = "dev.csye6225cloud.me"
-  }
+# resource "helm_release" "external-dns" {
+#   depends_on = [kubernetes_namespace.external_dns]
+#   name       = "external-dns"
+#   repository = "https://charts.bitnami.com/bitnami"
+#   chart      = "external-dns"
+#   namespace  = kubernetes_namespace.external_dns.metadata[0].name
+#   set {
+#     name  = "domainFilters[0]"
+#     value = "dev.csye6225cloud.me"
+#   }
 
-  set {
-    name  = "txtOwnerId"
-    value = "Z03666913JAM947E1XPH4"
-  }
-}
+#   set {
+#     name  = "txtOwnerId"
+#     value = "Z03666913JAM947E1XPH4"
+#   }
+# }

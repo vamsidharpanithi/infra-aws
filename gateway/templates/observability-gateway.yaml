@@ -1,25 +1,27 @@
----
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: observability-gateway
+  name: grafana-gateway
   namespace: istio-system
+  annotations: 
+    external-dns.alpha.kubernetes.io/hostname: grafana.dev.csye6225cloud.me
 spec:
   selector:
-    istio: ingress
+    app: istio-ingressgateway
   servers:
   - port:
       number: 80
-      name: http-observability
+      name: http
       protocol: HTTP
     hosts:
-    - "dev.csye6225cloud.me"
+    - "*"
   - port:
       number: 443
       name: https
       protocol: HTTPS
     hosts:
-    - "dev.csye6225cloud.me"
+    - "grafana.dev.csye6225cloud.me"
     tls:
       mode: SIMPLE
-      credentialName: istio-gateway-tls
+      credentialName: grafana-cert-tls
+
