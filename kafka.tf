@@ -267,6 +267,16 @@ EOF
   ]
 }
 
+
+resource "helm_release" "metrics_server" {
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = kubernetes_namespace.cluster_autoscaler.metadata[0].name
+  depends_on = [module.eks, kubernetes_namespace.cluster_autoscaler]
+
+}
+
 # resource "helm_release" "external-dns" {
 #   depends_on = [kubernetes_namespace.external_dns]
 #   name       = "external-dns"
